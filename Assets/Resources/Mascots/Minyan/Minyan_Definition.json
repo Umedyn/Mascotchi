@@ -1,0 +1,17 @@
+{
+  "mascotName": "Minyan",
+  "vtuberName": "MinikoMew",
+  "primaryActivity": "Gaming",
+  "evolutionProfile": {
+    "music": 1,
+    "gaming": 10,
+    "yapping": 3,
+    "mischief": 5,
+    "knowledge": 1
+  },
+  "statTendencies": {
+    "prefersLowHygiene": false,
+    "prefersLowHunger": true,
+    "prefersHighStress": false
+  }
+}

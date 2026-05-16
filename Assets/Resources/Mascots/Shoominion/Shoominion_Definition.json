@@ -1,0 +1,17 @@
+{
+  "mascotName": "Shoominion",
+  "vtuberName": "Shoomimi",
+  "primaryActivity": "Marbles",
+  "evolutionProfile": {
+    "music": 1,
+    "gaming": 5,
+    "yapping": 2,
+    "mischief": 10,
+    "knowledge": 1
+  },
+  "statTendencies": {
+    "prefersLowHygiene": true,
+    "prefersLowHunger": false,
+    "prefersHighStress": false
+  }
+}

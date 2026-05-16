@@ -1,0 +1,17 @@
+{
+  "mascotName": "Codebug",
+  "vtuberName": "Ellie_Minibot",
+  "primaryActivity": "Coding",
+  "evolutionProfile": {
+    "music": 2,
+    "gaming": 3,
+    "yapping": 3,
+    "mischief": 1,
+    "knowledge": 10
+  },
+  "statTendencies": {
+    "prefersLowHygiene": false,
+    "prefersLowHunger": false,
+    "prefersHighStress": false
+  }
+}

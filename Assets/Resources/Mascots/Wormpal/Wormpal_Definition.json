@@ -1,0 +1,17 @@
+{
+  "mascotName": "Wormpal",
+  "vtuberName": "Chrchie",
+  "primaryActivity": "Karaoke",
+  "evolutionProfile": {
+    "music": 10,
+    "gaming": 2,
+    "yapping": 6,
+    "mischief": 2,
+    "knowledge": 1
+  },
+  "statTendencies": {
+    "prefersLowHygiene": false,
+    "prefersLowHunger": false,
+    "prefersHighStress": true
+  }
+}
