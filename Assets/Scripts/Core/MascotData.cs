@@ -8,4 +8,5 @@ public class MascotData
     public Sprite EggBackground;
     public Sprite Likeness;
     public Sprite Food;
+    public Sprite Stinger;
 }

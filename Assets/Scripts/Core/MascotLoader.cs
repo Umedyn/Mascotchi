@@ -34,7 +34,7 @@ public static class MascotLoader
         return results;
     }
 
-    private static void ProcessMascot(string mascotName, string json, List<MascotData> results)
+    private static void ProcessMascot(string mascotName, string json, List<MascotData> results, string spritePathOverride = null)
     {
         // --- Parse JSON ---
         MascotDefinition def;
@@ -75,7 +75,7 @@ public static class MascotLoader
         }
 
         // --- Load sprites ---
-        string spritePath = $"Mascots/{mascotName}/Sprites";
+        string spritePath = spritePathOverride ?? $"Mascots/{mascotName}/Sprites";
         Sprite[] allSprites = Resources.LoadAll<Sprite>(spritePath);
 
         if (allSprites == null || allSprites.Length == 0)
@@ -89,6 +89,7 @@ public static class MascotLoader
         Sprite eggBg = null;
         Sprite likeness = null;
         Sprite food = null;
+        Sprite stinger = null;
 
         foreach (Sprite sprite in allSprites)
         {
@@ -103,6 +104,7 @@ public static class MascotLoader
                     case "EggBG":   eggBg    = sprite; break;
                     case "Likeness": likeness = sprite; break;
                     case "Food":    food     = sprite; break;
+                    case "Stinger": stinger = sprite; break;
                     default:
                         Debug.LogWarning($"[MascotLoader] {mascotName}: unrecognised single sprite '{sprite.name}', ignoring.");
                         break;
@@ -154,9 +156,33 @@ public static class MascotLoader
             AnimationFrames = animationFrames,
             EggBackground  = eggBg,
             Likeness       = likeness,
-            Food           = food
+            Food           = food,
+            Stinger         = stinger
         });
 
         Debug.Log($"[MascotLoader] Registered '{mascotName}' — {animationFrames.Count} animation(s), {allSprites.Length} sprite(s) total.");
+    }
+    public static MascotData LoadBlob()
+    {
+        TextAsset defAsset = Resources.Load<TextAsset>("Creature/Blob/Blob_Definition");
+        if (defAsset == null)
+        {
+            Debug.LogError("[MascotLoader] Blob definition not found at Resources/Creature/Blob/Blob_Definition.");
+            return null;
+        }
+
+        var results = new List<MascotData>();
+        ProcessMascot("Blob", defAsset.text, results, "Creature/Blob/Sprites");
+
+        if (results.Count == 0)
+        {
+            Debug.LogError("[MascotLoader] Blob failed to load.");
+            return null;
+        }
+
+        // Override sprite path — Blob lives outside Resources/Mascots/
+        // ProcessMascot already loaded from Creature/Blob/Sprites via the name "Blob"
+        Debug.Log("[MascotLoader] Blob loaded.");
+        return results[0];
     }
 }

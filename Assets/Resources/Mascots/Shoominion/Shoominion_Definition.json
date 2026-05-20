@@ -13,5 +13,10 @@
     "prefersLowHygiene": true,
     "prefersLowHunger": false,
     "prefersHighStress": false
+  },
+  "artistCredits": {
+      "stingerArtist": "",
+      "likenessArtist": "",
+      "backgroundArtist": ""
   }
 }

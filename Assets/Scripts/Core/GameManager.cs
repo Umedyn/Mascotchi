@@ -10,6 +10,11 @@ public class GameManager : MonoBehaviour
     public CreatureBase    creatureBase;
     public EvolutionTracker evolutionTracker;
     public CreatureAnimator creatureAnimator;
+    public MascotData BlobData { get; private set; }
+    public EvolutionReveal evolutionReveal;
+    public NicknamePrompt   nicknamePrompt;
+    public SettingsPanel    settingsPanel;
+    public RosterGallery    rosterGallery;
 
     [Header("Progression")]
     [Tooltip("Action quota for the Blob stage. Adolescent quota is 2x this. Keep low for testing.")]
@@ -30,19 +35,20 @@ public class GameManager : MonoBehaviour
     private void Boot()
     {
         LoadedMascots = MascotLoader.LoadAll();
+        BlobData      = MascotLoader.LoadBlob();
 
-        CurrentSave = SaveSystem.SaveExists()
-            ? SaveSystem.Load()
-            : InitializeNewSave();
+        if (BlobData != null)
+            LoadedMascots.Insert(0, BlobData);
 
-        if (!SaveSystem.SaveExists())
-            SaveSystem.Save(CurrentSave);
+        bool isNewGame = !SaveSystem.SaveExists();
+        CurrentSave = isNewGame ? InitializeNewSave() : SaveSystem.Load();
+        if (isNewGame) SaveSystem.Save(CurrentSave);
 
         LoadCreatureState();
 
         timeManager.Initialize(CurrentSave.lastSessionTimestamp);
-        timeManager.OnTick          += HandleTick;
-        timeManager.OnCatchUpTicks  += HandleCatchUp;
+        timeManager.OnTick         += HandleTick;
+        timeManager.OnCatchUpTicks += HandleCatchUp;
 
         Debug.Log($"[GameManager] Boot complete. Stage: {CurrentSave.growthStage}, Nickname: '{CurrentSave.nickname}'");
     }
@@ -54,7 +60,8 @@ public class GameManager : MonoBehaviour
         {
             hunger = 100f, stress = 100f, hygiene = 100f,
             growthStage = GrowthStage.Blob,
-            nickname = "Blob"
+            nickname = "",
+            unlockedMascots = new System.Collections.Generic.List<string> { "Blob" }
         };
     }
 
@@ -66,20 +73,37 @@ public class GameManager : MonoBehaviour
         if (CurrentSave.isEvolved)
         {
             MascotData active = LoadedMascots.Find(m => m.Definition.mascotName == CurrentSave.activeMascotId);
-            if (active != null) { creatureAnimator.SetMascotData(active); creatureAnimator.PlayAnimation("Idle"); }
+            if (active == null)
+            {
+                Debug.LogWarning($"[GameManager] Active mascot '{CurrentSave.activeMascotId}' not found. Falling back to Blob.");
+                active = BlobData;
+                CurrentSave.activeMascotId = "Blob";
+            }
             else Debug.LogWarning($"[GameManager] Active mascot '{CurrentSave.activeMascotId}' not found.");
         }
-        else if (LoadedMascots.Count > 0)
+        else
         {
-            // Pre-evolution: use first registered mascot as placeholder sprite source.
-            creatureAnimator.SetMascotData(LoadedMascots[0]);
-            creatureAnimator.PlayAnimation("Idle");
+            if (BlobData != null)
+            {
+                creatureAnimator.SetMascotData(BlobData);
+                creatureAnimator.SetStage(CurrentSave.growthStage);
+                creatureAnimator.PlayAnimation("Idle");
+                evolutionReveal.ShowPreEvolutionEggVisuals(BlobData);
+            }
+            else Debug.LogWarning("[GameManager] BlobData is null — creature will have no sprite.");
         }
     }
 
     public void PerformAction(ActionType action)
     {
-        if (CurrentSave.growthStage == GrowthStage.Evolved) return;
+        if (CurrentSave.growthStage == GrowthStage.Evolved)
+        {
+            creatureBase.ApplyActionStats(action);
+            evolutionTracker.ApplyActionAttributes(action);
+            SyncAndSave();
+            MainUIController.Instance.RefreshDisplay();
+            return;
+        }
 
         creatureBase.ApplyActionStats(action);
         evolutionTracker.ApplyActionAttributes(action);
@@ -90,6 +114,7 @@ public class GameManager : MonoBehaviour
             CurrentSave.growthStage = GrowthStage.Adolescent;
             CurrentSave.actionCount = 0;
             Debug.Log("[GameManager] Advanced to Adolescent.");
+            creatureAnimator.SetStage(GrowthStage.Adolescent);
         }
         else if (CurrentSave.growthStage == GrowthStage.Adolescent && CurrentSave.actionCount >= blobQuota * 2)
         {
@@ -105,20 +130,28 @@ public class GameManager : MonoBehaviour
         MascotData winner = evolutionTracker.EvaluateProfile(LoadedMascots);
         if (winner == null) { Debug.LogError("[GameManager] Evolution returned null. Aborting."); return; }
 
-        CurrentSave.growthStage    = GrowthStage.Evolved;
-        CurrentSave.isEvolved      = true;
+        CurrentSave.growthStage     = GrowthStage.Evolved;
+        CurrentSave.isEvolved       = true;
         CurrentSave.evolvedMascotId = winner.Definition.mascotName;
         CurrentSave.activeMascotId  = winner.Definition.mascotName;
 
         if (!CurrentSave.unlockedMascots.Contains(winner.Definition.mascotName))
             CurrentSave.unlockedMascots.Add(winner.Definition.mascotName);
 
-        // TODO Phase 6: replace with full evolution reveal sequence.
-        creatureAnimator.SetMascotData(winner);
-        creatureAnimator.PlayAnimation("Idle");
-
-        SyncAndSave();
-        Debug.Log($"[GameManager] Evolution complete. Winner: {winner.Definition.mascotName}");
+        evolutionReveal.PlayReveal(
+            winner,
+            onSwapSprite: () =>
+            {
+                creatureAnimator.SetMascotData(winner);
+                creatureAnimator.SetStage(GrowthStage.Evolved);
+                creatureAnimator.PlayAnimation("Idle");
+            },
+            onComplete: () =>
+            {
+                SyncAndSave();
+                Debug.Log($"[GameManager] Evolution complete. Winner: {winner.Definition.mascotName}");
+            }
+        );
     }
 
     private void HandleTick()
@@ -141,6 +174,24 @@ public class GameManager : MonoBehaviour
         Debug.Log($"[GameManager] Catch-up done. Hunger: {creatureBase.Hunger:F1} Stress: {creatureBase.Stress:F1} Hygiene: {creatureBase.Hygiene:F1}");
     }
 
+    public void SetNickname(string nickname)
+    {
+        CurrentSave.nickname = nickname;
+        SaveSystem.Save(CurrentSave);
+        Debug.Log($"[GameManager] Nickname set to '{nickname}'");
+    }
+
+    public void StartNewGame()
+    {
+        List<string> preserved = CurrentSave.unlockedMascots;
+        CurrentSave = InitializeNewSave();
+        CurrentSave.unlockedMascots = preserved;
+        SaveSystem.Save(CurrentSave);
+        LoadCreatureState();
+        evolutionReveal.ShowPreEvolutionEggVisuals(BlobData);
+        Debug.Log("[GameManager] New game started.");
+    }
+    
     private void SyncAndSave()
     {
         CurrentSave.hunger  = creatureBase.Hunger;

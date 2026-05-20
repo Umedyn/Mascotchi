@@ -1,0 +1,22 @@
+{
+  "mascotName": "Blob",
+  "vtuberName": "",
+  "primaryActivity": "Streaming",
+  "evolutionProfile": {
+    "music": 0,
+    "gaming": 0,
+    "yapping": 0,
+    "mischief": 0,
+    "knowledge": 0
+  },
+  "statTendencies": {
+    "prefersLowHygiene": false,
+    "prefersLowHunger": false,
+    "prefersHighStress": false
+  },
+  "artistCredits": {
+      "stingerArtist": "Umedyn",
+      "likenessArtist": "Umedyn",
+      "backgroundArtist": "Umedyn"
+  }
+}

@@ -19,6 +19,14 @@ public class StatTendencies
 }
 
 [Serializable]
+public class ArtistCredits
+{
+    public string stingerArtist;
+    public string likenessArtist;
+    public string backgroundArtist;
+}
+
+[Serializable]
 public class MascotDefinition
 {
     public string mascotName;
@@ -26,4 +34,5 @@ public class MascotDefinition
     public string primaryActivity;
     public EvolutionProfile evolutionProfile;
     public StatTendencies statTendencies;
+    public ArtistCredits artistCredits;
 }

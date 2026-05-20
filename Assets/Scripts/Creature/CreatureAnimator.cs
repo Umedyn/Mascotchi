@@ -1,10 +1,11 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CreatureAnimator : MonoBehaviour
 {
     [Header("References")]
-    public SpriteRenderer spriteRenderer;
+    public Image creatureImage;
 
     [Tooltip("Seconds per frame.")]
     public float frameRate = 0.2f;
@@ -22,15 +23,11 @@ public class CreatureAnimator : MonoBehaviour
 
     public void PlayAnimation(string animName)
     {
-        if (_currentData == null)
-        {
-            Debug.LogWarning("[CreatureAnimator] No MascotData set.");
-            return;
-        }
+        if (_currentData == null) { Debug.LogWarning("[CreatureAnimator] No MascotData set."); return; }
 
         if (!_currentData.AnimationFrames.ContainsKey(animName))
         {
-            Debug.LogWarning($"[CreatureAnimator] Animation '{animName}' not found. Falling back to Idle.");
+            Debug.LogWarning($"[CreatureAnimator] '{animName}' not found, falling back to Idle.");
             animName = "Idle";
             if (!_currentData.AnimationFrames.ContainsKey(animName)) return;
         }
@@ -46,9 +43,16 @@ public class CreatureAnimator : MonoBehaviour
         int index = 0;
         while (true)
         {
-            spriteRenderer.sprite = frames[index];
+            creatureImage.sprite = frames[index];
             index = (index + 1) % frames.Length;
             yield return new WaitForSeconds(frameRate);
         }
+    }
+
+    public void SetStage(GrowthStage stage)
+    {
+        transform.localScale = stage == GrowthStage.Adolescent || stage == GrowthStage.Evolved
+            ? Vector3.one
+            : new Vector3(0.5f, 0.5f, 1f);
     }
 }
