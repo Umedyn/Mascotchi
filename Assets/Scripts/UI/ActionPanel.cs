@@ -52,18 +52,65 @@ public class ActionPanel : MonoBehaviour
     private void DoAction(ActionType action)
     {
         if (_onCooldown) return;
-        GameManager.Instance.PerformAction(action);
-        MainUIController.Instance.RefreshDisplay();
-        StartCooldown();
+        GameManager.Instance.creatureAnimator.ResetPosition();
+
+        if (action == ActionType.Feed)
+        {
+            GameManager.Instance.creatureAnimator.ShowFood(() =>
+            {
+                GameManager.Instance.creatureAnimator.PlayOnce("Feed", () =>
+                {
+                    GameManager.Instance.PerformAction(action);
+                    MainUIController.Instance.RefreshDisplay();
+                    StartCooldown();
+                    GameManager.Instance.creatureAnimator.PlayAnimation("Idle");
+                });
+            });
+            return;
+        }
+
+        string animName = action switch
+        {
+            ActionType.Rest  => "Rest",
+            ActionType.Clean => "Clean",
+            _                => "Idle"
+        };
+
+        GameManager.Instance.creatureAnimator.PlayOnce(animName, () =>
+        {
+            GameManager.Instance.PerformAction(action);
+            MainUIController.Instance.RefreshDisplay();
+            StartCooldown();
+            GameManager.Instance.creatureAnimator.PlayAnimation("Idle");
+        });
     }
 
     private void DoActivity(ActionType activity)
     {
         if (_onCooldown) return;
         PanelManager.Instance.ShowPanel(PanelManager.Instance.mainPanel);
-        GameManager.Instance.PerformAction(activity);
-        MainUIController.Instance.RefreshDisplay();
-        StartCooldown();
+        GameManager.Instance.creatureAnimator.ResetPosition();
+
+        string animName = activity switch
+        {
+            ActionType.Karaoke   => "Karaoke",
+            ActionType.Gaming    => "Gaming",
+            ActionType.Streaming => "Streaming",
+            ActionType.Marbles   => "Marbles",
+            ActionType.Coding    => "Coding",
+            _                    => "Idle"
+        };
+
+        GameManager.Instance.creatureAnimator.PlayOnce(animName, () =>
+        {
+            GameManager.Instance.creatureAnimator.PlayOnce("Win", () =>
+            {
+                GameManager.Instance.PerformAction(activity);
+                MainUIController.Instance.RefreshDisplay();
+                StartCooldown();
+                GameManager.Instance.creatureAnimator.PlayAnimation("Idle");
+            });
+        });
     }
 
     private void StartCooldown()

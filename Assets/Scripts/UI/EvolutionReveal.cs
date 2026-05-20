@@ -9,7 +9,7 @@ public class EvolutionReveal : MonoBehaviour
     [Header("Flash")]
     public Image flashOverlay;
     public float flashInDuration  = 0.4f;
-    public float flashHoldDuration = 0.3f;
+    public float flashHoldDuration = 0.8f;
     public float flashOutDuration = 0.8f;
 
     [Header("Name Text")]

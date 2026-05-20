@@ -61,10 +61,7 @@ public class EvolutionTracker : MonoBehaviour
     public void TrackNeglect(float hunger, float stress, float hygiene)
     {
         if (hygiene < lowStatThreshold)
-        {
             LowHygieneTicks++;
-            IncrementAttribute("Mischief", mischievFromLowHygiene);
-        }
         if (hunger < lowStatThreshold)
             LowHungerTicks++;
         if (stress < lowStressStatThreshold)
