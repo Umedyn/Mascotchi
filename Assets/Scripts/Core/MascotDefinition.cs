@@ -23,7 +23,7 @@ public class ArtistCredits
 {
     public string stingerArtist;
     public string likenessArtist;
-    public string backgroundArtist;
+    public string spriteArtist;
 }
 
 [Serializable]

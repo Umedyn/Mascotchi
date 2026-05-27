@@ -68,8 +68,8 @@ public class SettingsPanel : MonoBehaviour
             sb.AppendLine($"[ {mascot.Definition.mascotName} ]");
             if (!string.IsNullOrEmpty(c.likenessArtist))
                 sb.AppendLine($"  Likeness: {c.likenessArtist}");
-            if (!string.IsNullOrEmpty(c.backgroundArtist))
-                sb.AppendLine($"  Background: {c.backgroundArtist}");
+            if (!string.IsNullOrEmpty(c.spriteArtist))
+                sb.AppendLine($"  Background: {c.spriteArtist}");
             if (!string.IsNullOrEmpty(c.stingerArtist))
                 sb.AppendLine($"  Stinger: {c.stingerArtist}");
             sb.AppendLine();

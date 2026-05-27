@@ -21,20 +21,20 @@ public class NeedsDisplay : MonoBehaviour
         stressBar.value  = creature.Stress  / 100f;
         hygieneBar.value = creature.Hygiene / 100f;
 
-        float total = tracker.Music + tracker.Gaming + tracker.Yapping
-                    + tracker.Mischief + tracker.Knowledge;
+        float highest = Mathf.Max(tracker.Music, tracker.Gaming, tracker.Yapping,
+                                tracker.Mischief, tracker.Knowledge);
 
-        if (total <= 0f)
+        if (highest <= 0f)
         {
             musicBar.fillAmount = gamingBar.fillAmount = yappingBar.fillAmount
                 = mischievBar.fillAmount = knowledgeBar.fillAmount = 0f;
             return;
         }
 
-        musicBar.fillAmount    = tracker.Music     / total;
-        gamingBar.fillAmount   = tracker.Gaming    / total;
-        yappingBar.fillAmount  = tracker.Yapping   / total;
-        mischievBar.fillAmount = tracker.Mischief  / total;
-        knowledgeBar.fillAmount = tracker.Knowledge / total;
+        musicBar.fillAmount     = tracker.Music     / highest;
+        gamingBar.fillAmount    = tracker.Gaming    / highest;
+        yappingBar.fillAmount   = tracker.Yapping   / highest;
+        mischievBar.fillAmount  = tracker.Mischief  / highest;
+        knowledgeBar.fillAmount = tracker.Knowledge / highest;
     }
 }
