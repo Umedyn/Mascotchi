@@ -14,10 +14,13 @@ public class CreatureBase : MonoBehaviour
     public float hygieneDecayStressMultiplier = 2f;
 
     [Header("Action Restore Amounts")]
-    public float feedRestoreAmount   = 30f;
-    public float restRestoreAmount   = 30f;
-    public float cleanRestoreAmount  = 30f;
+    public float feedRestoreAmount   = 50f;
+    public float restRestoreAmount   = 50f;
+    public float cleanRestoreAmount  = 50f;
     public float activityStressCost  = 15f;
+
+    [Tooltip("Multiplier on activity Stress cost for an evolved mascot's primary activity. 0.5 = half cost.")]
+    public float primaryActivityStressMultiplier = 0.5f;
 
     public float Hunger  { get; private set; }
     public float Stress  { get; private set; }
@@ -45,7 +48,7 @@ public class CreatureBase : MonoBehaviour
         Hygiene = Mathf.Max(0f, Hygiene - effectiveHygieneDecay);
     }
 
-    public void ApplyActionStats(ActionType action)
+    public void ApplyActionStats(ActionType action, bool isPrimaryActivity = false)
     {
         switch (action)
         {
@@ -59,9 +62,10 @@ public class CreatureBase : MonoBehaviour
                 Hygiene = Mathf.Min(100f, Hygiene + cleanRestoreAmount);
                 break;
             default:
-                // All activities cost Stress.
-                // TODO Phase 7: reduce cost for primary activity post-evolution.
-                Stress = Mathf.Max(0f, Stress - activityStressCost);
+                float cost = isPrimaryActivity
+                    ? activityStressCost * primaryActivityStressMultiplier
+                    : activityStressCost;
+                Stress = Mathf.Max(0f, Stress - cost);
                 break;
         }
     }

@@ -7213,7 +7213,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab6bde0973363954fb69f1ef350eaf55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TimeManager
-  tickIntervalSeconds: 5
+  tickIntervalSeconds: 60
   maxAwayTicks: 8
 --- !u!4 &1338845858
 Transform:
@@ -8128,9 +8128,9 @@ MonoBehaviour:
   evolutionTracker: {fileID: 1974681463}
   creatureAnimator: {fileID: 1974681465}
   evolutionReveal: {fileID: 1377444724}
-  nicknamePrompt: {fileID: 0}
-  settingsPanel: {fileID: 0}
-  rosterGallery: {fileID: 0}
+  nicknamePrompt: {fileID: 1478099495}
+  settingsPanel: {fileID: 1781675743}
+  rosterGallery: {fileID: 48537694}
   blobQuota: 10
 --- !u!1 &1438213550
 GameObject:
@@ -11504,6 +11504,7 @@ MonoBehaviour:
   restRestoreAmount: 30
   cleanRestoreAmount: 30
   activityStressCost: 15
+  primaryActivityStressMultiplier: 0.5
 --- !u!114 &1974681465
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12594,7 +12595,7 @@ MonoBehaviour:
   m_ChildAlignment: 0
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 120, y: 160}
+  m_CellSize: {x: 120, y: 140}
   m_Spacing: {x: 10, y: 10}
   m_Constraint: 1
   m_ConstraintCount: 3

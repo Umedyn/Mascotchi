@@ -41,6 +41,12 @@ public class SettingsPanel : MonoBehaviour
         RefreshCredits();
     }
 
+    void OnEnable()
+    {
+        if (GameManager.Instance?.CurrentSave != null)
+            RefreshCredits();
+    }
+
     public void RefreshNickname()
     {
         nicknameField.text = GameManager.Instance.CurrentSave.nickname;
@@ -56,25 +62,33 @@ public class SettingsPanel : MonoBehaviour
     {
         if (creditsText == null) return;
 
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        List<string> unlocked = GameManager.Instance.CurrentSave.unlockedMascots;
-
-        foreach (MascotData mascot in GameManager.Instance.LoadedMascots)
+        GameManager gm = GameManager.Instance;
+        if (gm == null || gm.CurrentSave == null || gm.LoadedMascots == null || gm.LoadedMascots.Count == 0)
         {
-            if (!unlocked.Contains(mascot.Definition.mascotName)) continue;
-            var c = mascot.Definition.artistCredits;
-            if (c == null) continue;
-
-            sb.AppendLine($"[ {mascot.Definition.mascotName} ]");
-            if (!string.IsNullOrEmpty(c.likenessArtist))
-                sb.AppendLine($"  Likeness: {c.likenessArtist}");
-            if (!string.IsNullOrEmpty(c.spriteArtist))
-                sb.AppendLine($"  Background: {c.spriteArtist}");
-            if (!string.IsNullOrEmpty(c.stingerArtist))
-                sb.AppendLine($"  Stinger: {c.stingerArtist}");
-            sb.AppendLine();
+            creditsText.text = "";
+            return;
         }
 
-        creditsText.text = sb.Length > 0 ? sb.ToString().TrimEnd() : "";
+        MascotData mascot = gm.CurrentSave.isEvolved
+            ? gm.LoadedMascots.Find(m => m.Definition.mascotName == gm.CurrentSave.activeMascotId)
+            : gm.LoadedMascots[0];
+
+        ArtistCredits c = mascot?.Definition.artistCredits;
+        if (c == null)
+        {
+            creditsText.text = "";
+            return;
+        }
+
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        sb.AppendLine($"[ {mascot.Definition.mascotName} ]");
+        if (!string.IsNullOrEmpty(c.likenessArtist))
+            sb.AppendLine($"  Likeness: {c.likenessArtist}");
+        if (!string.IsNullOrEmpty(c.spriteArtist))
+            sb.AppendLine($"  Sprites: {c.spriteArtist}");
+        if (!string.IsNullOrEmpty(c.stingerArtist))
+            sb.AppendLine($"  Stinger: {c.stingerArtist}");
+
+        creditsText.text = sb.ToString().TrimEnd();
     }
 }

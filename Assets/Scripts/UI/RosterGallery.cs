@@ -43,6 +43,15 @@ public class RosterGallery : MonoBehaviour
                 mascotName.text = "";
                 vtuberName.text = "";
             }
+
+            Button button = img.GetComponent<Button>();
+            if (button != null)
+            {
+                string name = mascot.Definition.mascotName;
+                SaveData save = GameManager.Instance.CurrentSave;
+                button.interactable = isUnlocked && save.isEvolved && name != "Blob" && name != save.activeMascotId;
+                button.onClick.AddListener(() => GameManager.Instance.SwapActiveMascot(name));
+            }
         }
     }
 }

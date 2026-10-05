@@ -33,6 +33,20 @@ public class EvolutionReveal : MonoBehaviour
         StartCoroutine(RevealSequence(winner, onSwapSprite, onComplete));
     }
 
+    public void PlayStinger(MascotData mascot)
+    {
+        if (mascot == null || mascot.Stinger == null) return;
+        StartCoroutine(StingerSequence(mascot));
+    }
+
+    private IEnumerator StingerSequence(MascotData mascot)
+    {
+        stingerOverlay.sprite = mascot.Stinger;
+        yield return StartCoroutine(FadeImage(stingerOverlay, 0f, 1f, stingerFadeInDuration));
+        yield return new WaitForSeconds(stingerHoldDuration);
+        yield return StartCoroutine(FadeImage(stingerOverlay, 1f, 0f, stingerFadeOutDuration));
+    }
+
     public void ShowEggVisuals(MascotData mascot)
     {
         if (mascot.EggBackground != null)
@@ -70,12 +84,7 @@ public class EvolutionReveal : MonoBehaviour
 
         // Stinger (optional — skipped if no sprite provided)
         if (winner.Stinger != null)
-        {
-            stingerOverlay.sprite = winner.Stinger;
-            yield return StartCoroutine(FadeImage(stingerOverlay, 0f, 1f, stingerFadeInDuration));
-            yield return new WaitForSeconds(stingerHoldDuration);
-            yield return StartCoroutine(FadeImage(stingerOverlay, 1f, 0f, stingerFadeOutDuration));
-        }
+            yield return StartCoroutine(StingerSequence(winner));
 
         // Show mascot name
         evolutionNameText.text = winner.Definition.mascotName;

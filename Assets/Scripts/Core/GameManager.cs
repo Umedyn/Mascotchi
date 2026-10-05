@@ -46,6 +46,9 @@ public class GameManager : MonoBehaviour
 
         LoadCreatureState();
 
+        if (CurrentSave.isEvolved)
+            evolutionReveal.PlayStinger(LoadedMascots.Find(m => m.Definition.mascotName == CurrentSave.activeMascotId));
+
         timeManager.Initialize(CurrentSave.lastSessionTimestamp);
         timeManager.OnTick         += HandleTick;
         timeManager.OnCatchUpTicks += HandleCatchUp;
@@ -79,7 +82,14 @@ public class GameManager : MonoBehaviour
                 active = BlobData;
                 CurrentSave.activeMascotId = "Blob";
             }
-            else Debug.LogWarning($"[GameManager] Active mascot '{CurrentSave.activeMascotId}' not found.");
+
+            if (active != null)
+            {
+                creatureAnimator.SetMascotData(active);
+                creatureAnimator.SetStage(GrowthStage.Evolved);
+                creatureAnimator.PlayAnimation("Idle");
+                evolutionReveal.ShowEggVisuals(active);
+            }
         }
         else
         {
@@ -98,7 +108,7 @@ public class GameManager : MonoBehaviour
     {
         if (CurrentSave.growthStage == GrowthStage.Evolved)
         {
-            creatureBase.ApplyActionStats(action);
+            creatureBase.ApplyActionStats(action, IsPrimaryActivity(action));
             evolutionTracker.ApplyActionAttributes(action);
             SyncAndSave();
             MainUIController.Instance.RefreshDisplay();
@@ -123,6 +133,13 @@ public class GameManager : MonoBehaviour
         }
 
         SyncAndSave();
+    }
+
+    private bool IsPrimaryActivity(ActionType action)
+    {
+        MascotData active = LoadedMascots.Find(m => m.Definition.mascotName == CurrentSave.activeMascotId);
+        if (active == null || string.IsNullOrEmpty(active.Definition.primaryActivity)) return false;
+        return string.Equals(action.ToString(), active.Definition.primaryActivity, System.StringComparison.OrdinalIgnoreCase);
     }
 
     private void TriggerEvolution()
@@ -156,19 +173,20 @@ public class GameManager : MonoBehaviour
 
     private void HandleTick()
     {
-        if (CurrentSave.growthStage == GrowthStage.Evolved) return;
         creatureBase.ApplyTick();
-        evolutionTracker.TrackNeglect(creatureBase.Hunger, creatureBase.Stress, creatureBase.Hygiene);
+        if (CurrentSave.growthStage != GrowthStage.Evolved)
+            evolutionTracker.TrackNeglect(creatureBase.Hunger, creatureBase.Stress, creatureBase.Hygiene);
         SyncAndSave();
     }
 
     private void HandleCatchUp(int count)
     {
-        if (CurrentSave.growthStage == GrowthStage.Evolved) return;
+        bool trackNeglect = CurrentSave.growthStage != GrowthStage.Evolved;
         for (int i = 0; i < count; i++)
         {
             creatureBase.ApplyTick();
-            evolutionTracker.TrackNeglect(creatureBase.Hunger, creatureBase.Stress, creatureBase.Hygiene);
+            if (trackNeglect)
+                evolutionTracker.TrackNeglect(creatureBase.Hunger, creatureBase.Stress, creatureBase.Hygiene);
         }
         SyncAndSave();
         Debug.Log($"[GameManager] Catch-up done. Hunger: {creatureBase.Hunger:F1} Stress: {creatureBase.Stress:F1} Hygiene: {creatureBase.Hygiene:F1}");
@@ -190,6 +208,32 @@ public class GameManager : MonoBehaviour
         LoadCreatureState();
         evolutionReveal.ShowPreEvolutionEggVisuals(BlobData);
         Debug.Log("[GameManager] New game started.");
+    }
+
+    public void SwapActiveMascot(string mascotName)
+    {
+        if (!CurrentSave.isEvolved) return;
+        if (mascotName == "Blob" || mascotName == CurrentSave.activeMascotId) return;
+        if (!CurrentSave.unlockedMascots.Contains(mascotName)) return;
+
+        MascotData mascot = LoadedMascots.Find(m => m.Definition.mascotName == mascotName);
+        if (mascot == null)
+        {
+            Debug.LogWarning($"[GameManager] Swap failed — '{mascotName}' not loaded.");
+            return;
+        }
+
+        CurrentSave.activeMascotId = mascotName;
+        SyncAndSave();
+
+        creatureAnimator.SetMascotData(mascot);
+        creatureAnimator.SetStage(GrowthStage.Evolved);
+        creatureAnimator.PlayAnimation("Idle");
+        evolutionReveal.ShowEggVisuals(mascot);
+        evolutionReveal.PlayStinger(mascot);
+        rosterGallery.Refresh();
+
+        Debug.Log($"[GameManager] Active mascot swapped to {mascotName}.");
     }
     
     private void SyncAndSave()
