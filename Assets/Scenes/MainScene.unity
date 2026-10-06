@@ -8208,7 +8208,8 @@ MonoBehaviour:
   nicknamePrompt: {fileID: 1478099495}
   settingsPanel: {fileID: 1781675743}
   rosterGallery: {fileID: 48537694}
-  blobQuota: 10
+  blobQuota: 3
+  starterMascotId: Codebug
 --- !u!1 &1438213550
 GameObject:
   m_ObjectHideFlags: 0
