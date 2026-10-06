@@ -20,6 +20,10 @@ public class GameManager : MonoBehaviour
     [Tooltip("Action quota for the Blob stage. Adolescent quota is 2x this. Keep low for testing.")]
     public int blobQuota = 10;
 
+    [Header("Special Builds")]
+    [Tooltip("If set, new games start already evolved as this mascot. Leave empty for normal play.")]
+    public string starterMascotId = "";
+
     public List<MascotData> LoadedMascots { get; private set; }
     public SaveData CurrentSave           { get; private set; }
 
@@ -59,13 +63,28 @@ public class GameManager : MonoBehaviour
     private SaveData InitializeNewSave()
     {
         Debug.Log("[GameManager] No save found — initializing new game.");
-        return new SaveData
+        SaveData save = new SaveData
         {
             hunger = 100f, stress = 100f, hygiene = 100f,
             growthStage = GrowthStage.Blob,
             nickname = "",
-            unlockedMascots = new System.Collections.Generic.List<string> { "Blob" }
+            unlockedMascots = new List<string> { "Blob" }
         };
+
+        if (!string.IsNullOrEmpty(starterMascotId))
+        {
+            if (LoadedMascots.Exists(m => m.Definition.mascotName == starterMascotId))
+            {
+                save.growthStage     = GrowthStage.Evolved;
+                save.isEvolved       = true;
+                save.evolvedMascotId = starterMascotId;
+                save.activeMascotId  = starterMascotId;
+                save.unlockedMascots.Add(starterMascotId);
+            }
+            else Debug.LogWarning($"[GameManager] Starter mascot '{starterMascotId}' not found. Starting as Blob.");
+        }
+
+        return save;
     }
 
     private void LoadCreatureState()
@@ -144,7 +163,7 @@ public class GameManager : MonoBehaviour
 
     private void TriggerEvolution()
     {
-        MascotData winner = evolutionTracker.EvaluateProfile(LoadedMascots);
+        MascotData winner = evolutionTracker.EvaluateProfile(LoadedMascots.FindAll(m => m != BlobData));
         if (winner == null) { Debug.LogError("[GameManager] Evolution returned null. Aborting."); return; }
 
         CurrentSave.growthStage     = GrowthStage.Evolved;
@@ -206,7 +225,6 @@ public class GameManager : MonoBehaviour
         CurrentSave.unlockedMascots = preserved;
         SaveSystem.Save(CurrentSave);
         LoadCreatureState();
-        evolutionReveal.ShowPreEvolutionEggVisuals(BlobData);
         Debug.Log("[GameManager] New game started.");
     }
 
@@ -230,7 +248,9 @@ public class GameManager : MonoBehaviour
         creatureAnimator.SetStage(GrowthStage.Evolved);
         creatureAnimator.PlayAnimation("Idle");
         evolutionReveal.ShowEggVisuals(mascot);
-        evolutionReveal.PlayStinger(mascot);
+        AudioManager.Instance?.StopMusic();
+        AudioManager.Instance?.PlayEvolutionSting();
+        evolutionReveal.PlayStinger(mascot, () => AudioManager.Instance?.PlayMainTheme());
         rosterGallery.Refresh();
 
         Debug.Log($"[GameManager] Active mascot swapped to {mascotName}.");

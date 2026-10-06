@@ -58,6 +58,7 @@ public class ActionPanel : MonoBehaviour
         {
             GameManager.Instance.creatureAnimator.ShowFood(() =>
             {
+                AudioManager.Instance?.PlayActionSFX(ActionType.Feed);
                 GameManager.Instance.creatureAnimator.PlayOnce("Feed", () =>
                 {
                     GameManager.Instance.PerformAction(action);
@@ -76,6 +77,7 @@ public class ActionPanel : MonoBehaviour
             _                => "Idle"
         };
 
+        AudioManager.Instance?.PlayActionSFX(action);
         GameManager.Instance.creatureAnimator.PlayOnce(animName, () =>
         {
             GameManager.Instance.PerformAction(action);
@@ -101,8 +103,10 @@ public class ActionPanel : MonoBehaviour
             _                    => "Idle"
         };
 
+        AudioManager.Instance?.PlayActionSFX(activity);
         GameManager.Instance.creatureAnimator.PlayOnce(animName, () =>
         {
+            AudioManager.Instance?.PlayActivityComplete();
             GameManager.Instance.creatureAnimator.PlayOnce("Win", () =>
             {
                 GameManager.Instance.PerformAction(activity);

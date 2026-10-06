@@ -33,10 +33,20 @@ public class EvolutionReveal : MonoBehaviour
         StartCoroutine(RevealSequence(winner, onSwapSprite, onComplete));
     }
 
-    public void PlayStinger(MascotData mascot)
+    public void PlayStinger(MascotData mascot, Action onComplete = null)
     {
-        if (mascot == null || mascot.Stinger == null) return;
-        StartCoroutine(StingerSequence(mascot));
+        if (mascot == null || mascot.Stinger == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+        StartCoroutine(StingerWithCallback(mascot, onComplete));
+    }
+
+    private IEnumerator StingerWithCallback(MascotData mascot, Action onComplete)
+    {
+        yield return StartCoroutine(StingerSequence(mascot));
+        onComplete?.Invoke();
     }
 
     private IEnumerator StingerSequence(MascotData mascot)
@@ -68,6 +78,8 @@ public class EvolutionReveal : MonoBehaviour
 
     private IEnumerator RevealSequence(MascotData winner, Action onSwapSprite, Action onComplete)
     {
+        AudioManager.Instance?.StopMusic();
+        AudioManager.Instance?.PlayEvolutionSting();
         // Flash in
         yield return StartCoroutine(FadeImage(flashOverlay, 0f, 1f, flashInDuration));
 
@@ -92,6 +104,7 @@ public class EvolutionReveal : MonoBehaviour
         yield return new WaitForSeconds(nameHoldDuration);
         yield return StartCoroutine(FadeText(evolutionNameText, 1f, 0f, nameFadeOutDuration));
 
+        AudioManager.Instance?.PlayMainTheme();
         onComplete?.Invoke();
     }
 
