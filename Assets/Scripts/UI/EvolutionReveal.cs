@@ -51,8 +51,9 @@ public class EvolutionReveal : MonoBehaviour
 
     private IEnumerator StingerSequence(MascotData mascot)
     {
+        // Start fully covered so the mascot underneath is never visible before the stinger.
         stingerOverlay.sprite = mascot.Stinger;
-        yield return StartCoroutine(FadeImage(stingerOverlay, 0f, 1f, stingerFadeInDuration));
+        SetAlpha(stingerOverlay, 1f);
         yield return new WaitForSeconds(stingerHoldDuration);
         yield return StartCoroutine(FadeImage(stingerOverlay, 1f, 0f, stingerFadeOutDuration));
     }
@@ -80,23 +81,30 @@ public class EvolutionReveal : MonoBehaviour
     {
         AudioManager.Instance?.StopMusic();
         AudioManager.Instance?.PlayEvolutionSting();
+
         // Flash in
         yield return StartCoroutine(FadeImage(flashOverlay, 0f, 1f, flashInDuration));
 
-        // Swap sprite while fully white
+        // Swap sprite and egg while fully white
         onSwapSprite?.Invoke();
-
-        // Apply egg visuals
         ShowEggVisuals(winner);
 
         yield return new WaitForSeconds(flashHoldDuration);
 
-        // Flash out
-        yield return StartCoroutine(FadeImage(flashOverlay, 1f, 0f, flashOutDuration));
-
-        // Stinger (optional — skipped if no sprite provided)
         if (winner.Stinger != null)
-            yield return StartCoroutine(StingerSequence(winner));
+        {
+            // Stinger fades in over the white, then the white is cleared behind it
+            stingerOverlay.sprite = winner.Stinger;
+            yield return StartCoroutine(FadeImage(stingerOverlay, 0f, 1f, stingerFadeInDuration));
+            SetAlpha(flashOverlay, 0f);
+            yield return new WaitForSeconds(stingerHoldDuration);
+            yield return StartCoroutine(FadeImage(stingerOverlay, 1f, 0f, stingerFadeOutDuration));
+        }
+        else
+        {
+            // No stinger: reveal straight from the white flash
+            yield return StartCoroutine(FadeImage(flashOverlay, 1f, 0f, flashOutDuration));
+        }
 
         // Show mascot name
         evolutionNameText.text = winner.Definition.mascotName;

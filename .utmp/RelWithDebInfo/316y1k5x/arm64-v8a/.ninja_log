@@ -1,0 +1,12 @@
+# ninja log v5
+119	659	8132080115689004	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	5652b098c7d66848
+662	1244	8132080122276329	C:/Project Mascotchi/Mascotchi/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/316y1k5x/obj/arm64-v8a/libswappywrapper.so	c29af4b303d35bcf
+56	1645	8132080126122046	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	b7659f4ab85a4c7
+68	1673	8132080126122046	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	e8e392f4ead886e3
+43	1729	8132080126432639	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	9368114734e79d6f
+105	1731	8132080126605787	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	6127e1a86a99e266
+34	1860	8132080127125249	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	ef3ec15504065984
+79	1923	8132080129087794	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	4efbe3e1bfcf99ea
+90	2012	8132080129965384	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	f4cad7ffdb22ee68
+1	2059	8132080130223667	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	fa1a334a63d2fd34
+2060	2202	8132080131929801	C:/Project Mascotchi/Mascotchi/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/316y1k5x/obj/arm64-v8a/libgame.so	4c6a5509f89a8bfb

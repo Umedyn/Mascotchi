@@ -85,10 +85,14 @@ public class CreatureAnimator : MonoBehaviour
         float newX = Mathf.Clamp(current.x + (idleNudgeAmount * direction),
             -idleNudgeBoundary, idleNudgeBoundary);
 
+        if (Mathf.Approximately(newX, current.x)) return;
+
         if (rectTransform != null)
             rectTransform.anchoredPosition = new Vector2(newX, current.y);
         else
             transform.localPosition = new Vector3(newX, transform.localPosition.y, 0f);
+
+        AudioManager.Instance?.PlayMoveSFX(newX > current.x);
     }
 
     public void ResetPosition()

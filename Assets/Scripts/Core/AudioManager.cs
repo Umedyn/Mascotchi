@@ -31,6 +31,10 @@ public class AudioManager : MonoBehaviour
     public AudioClip codingSFX;
     public AudioClip activityCompleteSFX;
 
+    [Header("Movement SFX")]
+    public AudioClip moveLeftSFX;
+    public AudioClip moveRightSFX;
+
     [Header("Evolution SFX")]
     public AudioClip evolutionSting;
 
@@ -79,6 +83,7 @@ public class AudioManager : MonoBehaviour
     public void PlayButtonTap()        => PlaySFX(buttonTap);
     public void PlayActivityComplete() => PlaySFX(activityCompleteSFX);
     public void PlayEvolutionSting()   => PlaySFX(evolutionSting);
+    public void PlayMoveSFX(bool movingRight) => PlaySFX(movingRight ? moveRightSFX : moveLeftSFX);
 
     public void PlayActionSFX(ActionType action) => PlaySFX(GetActionClip(action));
 
