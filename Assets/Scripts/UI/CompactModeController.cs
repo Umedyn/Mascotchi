@@ -5,6 +5,8 @@ public class CompactModeController : MonoBehaviour
 {
     [Header("References")]
     public CanvasScaler  canvasScaler;
+    [Tooltip("Fixed-size container holding EggPanel, BottomPanel and the overlays.")]
+    public RectTransform frame;
     public RectTransform eggPanel;
     public CanvasGroup   bottomPanelGroup;
     public Button        toggleButton;
@@ -16,16 +18,15 @@ public class CompactModeController : MonoBehaviour
     public float eggAspect = 1f;
 
     private bool    _compact;
-    private float   _originalMatch;
+    private bool    _initialised;
     private Vector2 _eggAnchorMin, _eggAnchorMax, _eggOffsetMin, _eggOffsetMax;
 
     void Awake()
     {
-        _originalMatch = canvasScaler.matchWidthOrHeight;
-        _eggAnchorMin  = eggPanel.anchorMin;
-        _eggAnchorMax  = eggPanel.anchorMax;
-        _eggOffsetMin  = eggPanel.offsetMin;
-        _eggOffsetMax  = eggPanel.offsetMax;
+        _eggAnchorMin = eggPanel.anchorMin;
+        _eggAnchorMax = eggPanel.anchorMax;
+        _eggOffsetMin = eggPanel.offsetMin;
+        _eggOffsetMax = eggPanel.offsetMax;
 
         toggleButton.onClick.AddListener(Toggle);
 
@@ -36,32 +37,37 @@ public class CompactModeController : MonoBehaviour
 
     void Start()
     {
-    #if UNITY_STANDALONE && !UNITY_EDITOR
+#if UNITY_STANDALONE && !UNITY_EDITOR
         if ((float)Screen.height / Screen.width < compactAspectThreshold)
         {
             Vector2 reference = canvasScaler.referenceResolution;
             int fullHeight = Mathf.RoundToInt(Screen.width * reference.y / reference.x);
             Screen.SetResolution(Screen.width, fullHeight, FullScreenMode.Windowed);
         }
-    #endif
+#endif
     }
 
     void Update()
     {
         bool shouldBeCompact = (float)Screen.height / Screen.width < compactAspectThreshold;
-        if (shouldBeCompact != _compact)
+        if (!_initialised || shouldBeCompact != _compact)
             ApplyLayout(shouldBeCompact);
     }
 
     private void ApplyLayout(bool compact)
     {
-        _compact = compact;
+        _compact     = compact;
+        _initialised = true;
 
-        // Match width in compact mode so the egg keeps its size instead of shrinking to fit the shorter window.
-        canvasScaler.matchWidthOrHeight = compact ? 0f : _originalMatch;
+        Vector2 reference = canvasScaler.referenceResolution;
 
         if (compact)
         {
+            // Egg-only: fit to width so the egg keeps its size in the shorter window.
+            canvasScaler.screenMatchMode    = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            canvasScaler.matchWidthOrHeight = 0f;
+            frame.sizeDelta = new Vector2(reference.x, reference.x * eggAspect);
+
             eggPanel.anchorMin = Vector2.zero;
             eggPanel.anchorMax = Vector2.one;
             eggPanel.offsetMin = Vector2.zero;
@@ -69,6 +75,11 @@ public class CompactModeController : MonoBehaviour
         }
         else
         {
+            // Full layout: the whole 480x854 frame always fits on screen at its true shape.
+            // Any leftover screen space becomes empty bars instead of stretching the layout.
+            canvasScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
+            frame.sizeDelta = reference;
+
             eggPanel.anchorMin = _eggAnchorMin;
             eggPanel.anchorMax = _eggAnchorMax;
             eggPanel.offsetMin = _eggOffsetMin;
