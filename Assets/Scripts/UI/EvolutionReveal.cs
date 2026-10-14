@@ -28,6 +28,9 @@ public class EvolutionReveal : MonoBehaviour
     public float stingerHoldDuration    = 2.0f;
     public float stingerFadeOutDuration = 0.4f;
 
+    // True while the evolution reveal or a stinger is on screen. Streamer commands wait for this to clear.
+    public bool IsPlaying { get; private set; }
+
     public void PlayReveal(MascotData winner, Action onSwapSprite, Action onComplete)
     {
         StartCoroutine(RevealSequence(winner, onSwapSprite, onComplete));
@@ -45,7 +48,9 @@ public class EvolutionReveal : MonoBehaviour
 
     private IEnumerator StingerWithCallback(MascotData mascot, Action onComplete)
     {
+        IsPlaying = true;
         yield return StartCoroutine(StingerSequence(mascot));
+        IsPlaying = false;
         onComplete?.Invoke();
     }
 
@@ -79,6 +84,7 @@ public class EvolutionReveal : MonoBehaviour
 
     private IEnumerator RevealSequence(MascotData winner, Action onSwapSprite, Action onComplete)
     {
+        IsPlaying = true;
         AudioManager.Instance?.StopMusic();
         AudioManager.Instance?.PlayEvolutionSting();
 
@@ -113,6 +119,7 @@ public class EvolutionReveal : MonoBehaviour
         yield return StartCoroutine(FadeText(evolutionNameText, 1f, 0f, nameFadeOutDuration));
 
         AudioManager.Instance?.PlayMainTheme();
+        IsPlaying = false;
         onComplete?.Invoke();
     }
 

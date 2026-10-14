@@ -22,6 +22,10 @@ public class ActionPanel : MonoBehaviour
 
     private float _cooldownRemaining;
     private bool  _onCooldown;
+    private bool  _actionInProgress;
+
+    // True while any action (fan or streamer) is animating. Streamer commands are ignored while busy.
+    public bool IsBusy => _actionInProgress;
 
     void Start()
     {
@@ -45,75 +49,73 @@ public class ActionPanel : MonoBehaviour
         if (_cooldownRemaining <= 0f)
         {
             _onCooldown = false;
-            SetButtonsInteractable(true);
+            if (!_actionInProgress) SetButtonsInteractable(true);
         }
     }
 
+    // Fan pressed Feed, Rest or Clean.
     private void DoAction(ActionType action)
     {
-        if (_onCooldown) return;
+        if (_onCooldown || _actionInProgress) return;
+        RunAction(action, startFanCooldown: true);
+    }
+
+    // Fan picked an activity from the activity picker.
+    private void DoActivity(ActionType activity)
+    {
+        if (_onCooldown || _actionInProgress) return;
+        PanelManager.Instance.ShowPanel(PanelManager.Instance.mainPanel);
+        RunAction(activity, startFanCooldown: true);
+    }
+
+    // Called by TwitchListener. Plays exactly like a fan action but leaves the fan's cooldown alone.
+    public void RunStreamerAction(ActionType action)
+    {
+        if (_actionInProgress) return;
+        RunAction(action, startFanCooldown: false);
+    }
+
+    private void RunAction(ActionType action, bool startFanCooldown)
+    {
+        _actionInProgress = true;
+        SetButtonsInteractable(false);
         GameManager.Instance.creatureAnimator.ResetPosition();
+
+        System.Action finish = () =>
+        {
+            GameManager.Instance.PerformAction(action);
+            MainUIController.Instance.RefreshDisplay();
+            _actionInProgress = false;
+
+            if (startFanCooldown) StartCooldown();
+            else if (!_onCooldown) SetButtonsInteractable(true);
+
+            GameManager.Instance.creatureAnimator.PlayAnimation("Idle");
+        };
 
         if (action == ActionType.Feed)
         {
             GameManager.Instance.creatureAnimator.ShowFood(() =>
             {
                 AudioManager.Instance?.PlayActionSFX(ActionType.Feed);
-                GameManager.Instance.creatureAnimator.PlayOnce("Feed", () =>
-                {
-                    GameManager.Instance.PerformAction(action);
-                    MainUIController.Instance.RefreshDisplay();
-                    StartCooldown();
-                    GameManager.Instance.creatureAnimator.PlayAnimation("Idle");
-                });
+                GameManager.Instance.creatureAnimator.PlayOnce("Feed", finish);
             });
             return;
         }
 
-        string animName = action switch
+        if (action == ActionType.Rest || action == ActionType.Clean)
         {
-            ActionType.Rest  => "Rest",
-            ActionType.Clean => "Clean",
-            _                => "Idle"
-        };
+            AudioManager.Instance?.PlayActionSFX(action);
+            GameManager.Instance.creatureAnimator.PlayOnce(action.ToString(), finish);
+            return;
+        }
 
+        // Activities: activity animation, then the Win animation.
         AudioManager.Instance?.PlayActionSFX(action);
-        GameManager.Instance.creatureAnimator.PlayOnce(animName, () =>
-        {
-            GameManager.Instance.PerformAction(action);
-            MainUIController.Instance.RefreshDisplay();
-            StartCooldown();
-            GameManager.Instance.creatureAnimator.PlayAnimation("Idle");
-        });
-    }
-
-    private void DoActivity(ActionType activity)
-    {
-        if (_onCooldown) return;
-        PanelManager.Instance.ShowPanel(PanelManager.Instance.mainPanel);
-        GameManager.Instance.creatureAnimator.ResetPosition();
-
-        string animName = activity switch
-        {
-            ActionType.Karaoke   => "Karaoke",
-            ActionType.Gaming    => "Gaming",
-            ActionType.Streaming => "Streaming",
-            ActionType.Marbles   => "Marbles",
-            ActionType.Coding    => "Coding",
-            _                    => "Idle"
-        };
-
-        AudioManager.Instance?.PlayActionSFX(activity);
-        GameManager.Instance.creatureAnimator.PlayOnce(animName, () =>
+        GameManager.Instance.creatureAnimator.PlayOnce(action.ToString(), () =>
         {
             AudioManager.Instance?.PlayActivityComplete();
-            GameManager.Instance.creatureAnimator.PlayOnce("Win", () =>
-            {
-                GameManager.Instance.PerformAction(activity);
-                MainUIController.Instance.RefreshDisplay();
-                StartCooldown();
-                GameManager.Instance.creatureAnimator.PlayAnimation("Idle");
-            });
+            GameManager.Instance.creatureAnimator.PlayOnce("Win", finish);
         });
     }
 
