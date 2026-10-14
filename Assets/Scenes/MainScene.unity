@@ -8556,7 +8556,7 @@ MonoBehaviour:
   settingsPanel: {fileID: 1781675743}
   rosterGallery: {fileID: 48537694}
   blobQuota: 3
-  starterMascotId: codebug
+  starterMascotId: Codebug
 --- !u!1 &1438213550
 GameObject:
   m_ObjectHideFlags: 0
