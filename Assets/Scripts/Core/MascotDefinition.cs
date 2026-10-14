@@ -31,6 +31,7 @@ public class MascotDefinition
 {
     public string mascotName;
     public string vtuberName;
+    public string twitchChannel;
     public string primaryActivity;
     public EvolutionProfile evolutionProfile;
     public StatTendencies statTendencies;
